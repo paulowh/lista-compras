@@ -1,4 +1,4 @@
-import { View, Image, TouchableOpacity, Text, FlatList, Alert } from 'react-native';
+import { View, Image, TouchableOpacity, Text, FlatList, Alert, ScrollView } from 'react-native';
 import { useState, useEffect } from 'react';
 
 import { Item } from '@/components/Item';
@@ -9,19 +9,33 @@ import { Button } from '@/components/Button'
 
 import { style } from './style';
 import { FilterStatus } from '@/types/FilterStatus';
+import { ItemStorage } from '@/storage/itensStorage';
 
 const FILTER_STATUS: FilterStatus[] = [FilterStatus.PENDING, FilterStatus.DONE]
 
 export default function Home() {
   const [filter, setFilter] = useState(FilterStatus.PENDING)
   const [description, setDescription] = useState('')
+  const [itens, setItens] = useState<ItemStorage[]>([])
 
+  function fnAdicionarItem() {
+    if (!description.trim()) {
+      return Alert.alert("Adicionar", "Informe a descrição para adicionar.")
+    }
 
-  const itensDataTeste = {
-    id: 234,
-    status: FilterStatus.DONE,
-    description: "descrição top"
+    const newItem = {
+      id: Math.random().toString(36),
+      description: description,
+      status: FilterStatus.PENDING
+    }
+
+    setItens([...itens, newItem])
+
+    setDescription('')
+
   }
+
+
   return (
     <View style={style.container}>
       <Image source={require('@/assets/logo.png')} style={style.logo} />
@@ -33,7 +47,7 @@ export default function Home() {
           value={description}
         />
 
-        <Button title="Adicionar" />
+        <Button title="Adicionar" onPress={fnAdicionarItem} />
       </View>
 
       <View style={style.content}>
@@ -56,11 +70,22 @@ export default function Home() {
         </View>
 
         {/* os itens estão aqui !!! */}
-        <Item data={itensDataTeste} />
+        <FlatList
+          data={itens}
+          renderItem={({ item }) => (
+            <Item data={item} />
+          )}
+          ListEmptyComponent={() =>
+            <Text style={style.empty}>Nenhum item encontrado!</Text>
+          }
+          ItemSeparatorComponent={() => <View style={style.separator} />}
+          contentContainerStyle={style.listContent}
+          showsVerticalScrollIndicator={false}
+        />
 
       </View>
 
-    </View>
+    </View >
   );
 }
 
